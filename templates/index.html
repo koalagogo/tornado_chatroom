@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <title>Index</title>
+        <style type="text/css">
+            ul
+            {
+                border: 1px solid #90bade;
+            }
+            li
+            {
+                border-bottom: 1px solid black;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <div>
+                <ul id="message_list">
+                </ul>
+            </div>
+            <div>
+                <input id="text_input"></input>
+                <button type="submit" id="send_btn">send</button>
+            </div>
+        </div>
+        <script src="/static/jquery.min.js"></script>
+        <script>
+            var ul_ele = $("#message_list");
+            var btn_ele = $("#send_btn");
+            var input_ele = $("#text_input");
+            input_ele.val("");
+
+            var ts = Date.now();
+
+            function generate_li(msg, timestamp) {
+                var t_date = new Date(timestamp);
+                var time_str = t_date.toLocaleTimeString();
+                return  "<li><span>"+time_str+" says:</span> <span>"+msg+"</span></li>";
+            }
+
+            function get_data() {
+                $.getJSON("/msg/"+ts, function(result){
+                    result["messages"].forEach(function(item){
+                        ul_ele.append(generate_li(item["message"], item["timestamp"]));
+                    });
+                });
+                ts = Date.now();
+            }
+
+            setInterval("get_data()", 1000);
+
+            btn_ele.click(function(e) {
+                if(input_ele.val().replace(/(^\s*)|(\s*$)/g, "").length==0){
+                    alert("输入不能为空");
+                    input_ele.val("");
+                }else{
+                    $.post("/msg", {message: input_ele.val()}, function(r){
+                        //console.log('post');
+                        get_data();
+                    });
+                    input_ele.val("");
+                }
+            });
+        </script>
+    </body>
+</html>
