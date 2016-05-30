@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <title>Index</title>
+        <style type="text/css">
+            ul
+            {
+                border: 1px solid #90bade;
+            }
+            li
+            {
+                border-bottom: 1px solid black;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <div>
+                <ul id="message_list">
+                </ul>
+            </div>
+            <div>
+                <input id="text_input"></input>
+                <button type="submit" id="send_btn">send</button>
+            </div>
+        </div>
+        <script src="/static/jquery.min.js"></script>
+        <script>
+            var ws = new WebSocket("ws://localhost:8000/ws");
+            var ul_ele = $("#message_list");
+            var btn_ele = $("#send_btn");
+            var input_ele = $("#text_input");
+            input_ele.val("");
+
+            function get_date_string() {
+                var t = new Date();
+                return t.toLocaleTimeString();
+            }
+
+            function generate_li(msg) {
+               return "<li><span>"+get_date_string()+" says:</span> <span>"+msg+"</span></li>";
+            }
+
+            btn_ele.click(function(e) {
+                if(input_ele.val().replace(/(^\s*)|(\s*$)/g, "").length==0){
+                    alert("输入不能为空");
+                    input_ele.val("");
+                }else{
+                    ul_ele.append(generate_li(input_ele.val()));
+                    ws.send(input_ele.val());
+                    input_ele.val("");
+                }
+            });
+
+            ws.onmessage = function (e) {
+                ul_ele.append(generate_li(e.data));
+            };
+        </script>
+    </body>
+</html>
